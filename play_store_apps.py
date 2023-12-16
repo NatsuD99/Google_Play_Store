@@ -10,7 +10,6 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from tabulate import tabulate
 import math
-import plotly.express as px
 sns.set_palette('ocean_r')
 import scipy.stats as stats
 from scipy.stats import kruskal, pearsonr, f_oneway
