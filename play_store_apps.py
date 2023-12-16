@@ -8,7 +8,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from tabulate import tabulate
 import math
 sns.set_palette('ocean_r')
 import scipy.stats as stats
@@ -69,7 +68,8 @@ df[df['App Name'].duplicated()][['App Name', 'App Id']].head(10)
 # The 5 records in which the app name are missing, we'll remove those.
 
 # %%
-df_clean = df.dropna(subset=['App Name'])
+df_clean = df.copy()
+df_clean = df_clean.dropna(subset=['App Name'])
 df_clean.isna().sum()
 # %% [markdown]
 # There are 22883 apps that do not have a rating or a rating count. 
@@ -88,56 +88,126 @@ df_clean[['Installs', 'Minimum Installs']].head()
 # Let's remove those and have Installs as a numerical column and then compare 
 # to check if the values are actually the same.
 # %%
-df_clean['Installs']=df_clean['Installs'].map(lambda x: x[:-1])
-df_clean['Installs']= df_clean['Installs'].map(lambda x: x.replace(',', ''))
+df_clean['Installs']=df_clean['Installs'].map(lambda x: x[:-1]) # Removing the '+'
+df_clean['Installs']= df_clean['Installs'].map(lambda x: x.replace(',', '')) # Removing the ','
 df_clean['Installs']= pd.to_numeric(df_clean['Installs'])
-# %%
 df_clean['Installs'].equals(df_clean['Minimum Installs'].astype('int64'))
 # %% [markdown]
-# So both the columns have same values. The meaning of both the feature is also more or less the same.
+# So both the columns have same values. The meaning of both the features is also more or less the same.
 # So, we will drop one of them.
 # %%
 df_clean = df_clean.drop('Installs', axis=1)
-# %%
-df_clean.isna().sum()
-# 32 & 31 instances of NA value in Developer Id and Email respectively
-# %%
-## Processing the three string variables 'Developer Id','Developer Email' and 'Developer Website'
-# 'Developer Website' has 760831 NA values and so I have chosen not to drop those since it might result in significant data loss.
-df_clean = df_clean.dropna(subset=['Developer Id','Developer Email'])
 df_clean.isna().sum()
 # %%[markdown]
-# Now let's concentrate on the currency column which has 20 nan values.
+# Now let's concentrate on the currency column which has 20 nan values. We'll just remove these.
 # %%
-print(df_clean['Currency'].value_counts())
-# %%[markdown]
-# The various currencies are:
-# * 'USD': United States Dollar,'CAD': Canadian Dollar
-# * 'EUR': Euro 'INR': Indian Rupee 'VND': Vietnamese Dong
-# * 'GBP': British Pound Sterling  'BRL': Brazilian Real
-# * 'KRW': South Korean Won  'TRY': Turkish Lira
-# * 'SGD': Singapore Dollar 'AUD': Australian Dollar
-# * 'ZAR': South African Rand
-# 
-# We have'XXX':# This is a special code used to denote that no specific currency
-# is involved. It's often used in financial contexts to represent a placeholder
-# or a non-standard situation.
-# 
-# We also notice that the vast majority is USD, some XXX and 
-# countable number of records for the rest of the currencies. 
-# We'll deal with this properly during data cleaning.
-# %%
-# Handling nan values of currency column
 df_clean = df_clean.dropna(subset=['Currency'])
 df_clean.isna().sum()
+# %%[markdown]
+# Since we have 6526 rows consisting of nan we can afford
+# to drop it .Considering the amount of data we have it should not possess a problem
+# %%
+df_clean = df_clean.dropna(subset=['Minimum Android'])
+df_clean.isna().sum()
+# %%[markdown]
+# `Developer ID` and `Developer Email` are useful information but unnecessary for our model, so we don't need to deal with their missing values 
+# and we will drop those columns going ahead.
+# 
+# `Developer Website` has 751356 NA values and so we have chosen not to drop those since it might result in significant data loss.
+# Going ahead we will use this column for feature engineering and then drop this column
+
 
 # %%[markdown]
+# We notice that Released and privacy policy have too much NA values. 
+# Released column has 48371 NA values. We'll impute them using median.
+# But, we'll be using these for analysis and feature engineering going ahead.
+# So for now, we'll keep the missing values since it doesn't pose an issue.
+# %%
+# Imputing the missing values of released column  with median date 
+df_clean['Released'] = pd.to_datetime(df_clean['Released'], errors='coerce')
+median_date = df_clean['Released'].median()  # Calculate the median date
+df_clean['Released'].fillna(median_date, inplace=True)
+df_clean['Released'].isna().sum() #rechecking for missing values
+
+# %%[markdown]
+## EDA - Exploratory Data Analysis
+### Data Cleaning & Feature Engineering
+# %%
+print(df_clean['Minimum Android'].value_counts())
+# %%[markdown]
+# This has values in the form of '4.1 and up'. Let's clean it by removing the strings and rounding up 
+# to get the float minimum android version
+# %%
+# Function to extract the numeric part, round up, and return the first three characters
+def extract_and_round_up(version_string):
+    try:
+        # Split the string, take the first part, convert to float, round up, and return the first three characters
+        # The basic reason of applying ceiling function is because
+        return str(math.ceil(float(version_string.split()[0][:3])))
+    except (ValueError, IndexError):
+        # Return the original string in case of an exception
+        return version_string
+
+df_clean['Minimum Android'] = df_clean['Minimum Android'].apply(extract_and_round_up)
+print(df_clean['Minimum Android'])
+ 
+# %%
+#Visualising Minimum android Column
+plt.figure(figsize=(10, 6))
+df_clean['Minimum Android'].value_counts().plot(kind='bar', color='skyblue')
+plt.title('Distribution of Minimum Android Versions')
+plt.xlabel('Minimum Android Version')
+plt.ylabel('Count')
+plt.xticks(rotation=90, ha='right')
+plt.tight_layout()
+plt.show()
+# %%[markdown]
+# * Android Version 5:
+# This version appears most frequently in the dataset, with a count
+# of (please enter number as data will be changed), indicating a significant presence of apps designed for
+# Android version 5.
+# * Android Version 4: The second most common version, appearing
+# 338,684 times.
+# * Varies with Device: Indicates cases where the minimum Android
+# version is flexible or unspecified, occurring 24,322 times. 
+
+# %%
+# We can't work with the varies with device, so we'll remove those
+df_clean = df_clean[df_clean['Minimum Android']!= 'Varies with device']
+
+# %%
+currency_counts = df_clean['Currency'].value_counts()
+plt.figure(figsize=(10, 6))
+plt.pie(currency_counts, labels=currency_counts.index, autopct='%1.2f%%', startangle=90)
+plt.title('Distribution of Currencies')
+plt.legend(currency_counts.index, loc='center left', bbox_to_anchor=(1, 0.5))
+plt.show()
+# %%[markdown]
+### Conclusion:
+# The dataset is heavily dominated by transactions in U.S. Dollars, as evidenced by the high probability associated with USD.
+# The low probabilities for other currencies suggest that these alternate currencies 
+# are rare or infrequently represented in the dataset. 
+# The presence of 'XXX' still indicates some instances where 
+# the currency information is unspecified or missing, albeit at a very low probability.
+
+# %%
+df_clean['Currency'].value_counts(normalize=True)
+# %%[markdown]
+# USD (U.S. Dollar): The probability of encountering the U.S. Dollar in the dataset is extremely high, at approximately 99.946%. 
+# This suggests that the overwhelming majority of entries in the dataset are denominated in U.S. Dollars.
+# XXX (Unknown Currency): This has a probability of approximately
+# 0.053%, indicating that there are a small number of instances
+# where the currency information is either missing or not specified.
+# The rest of the currencies have very low probabilities (in the range of 0.0000026% to 0.000000044%) 
+# relative to the U.S. Dollar, indicating their infrequent occurrence in the dataset.
+# 
+# We'll leave these untouched here, and during preprocessing we'll convert all the currency to USD
+
+# %%
 # Preprocessing the size column
-print(df_clean['Size'].isna().sum())
-df_clean['Size'].unique()
-#df_clean['Size']
-
-
+print(df_clean['Size'].unique())
+# %%[markdown]
+# So, the app sizes are in GB, MB, and KB. Let's convert all those in to KBs 
 # %%
 # Getting the count of apps of various sizes 
 countm_M=0
@@ -166,11 +236,8 @@ print(f'Apps of size in kilobytes are {countk_K}')
 print(f'Apps of size in gigabytes are {countg_G}')
 print(f'Apps of variable sizes and also of nan values are {count_varieswithdevice_nan}')
 
-
-
-
 # %%
-# Here I am converting apps of sizeM(megabytes) 
+# Here we convert apps of sizeM(megabytes) 
 # into their corresponding values in kilobytes(k)
 def convert_m_to_kb(x):
     if 'M' in x or 'm' in x:
@@ -183,7 +250,7 @@ df_clean['Size'] = df_clean['Size'].astype(str).apply(convert_m_to_kb)
 x = (df_clean['Size'] == 'm') | (df_clean['Size'] == 'M')
 # Once we have created the boolean mask x, you can use x.sum() 
 # to count the number of True values in the mask. 
-# In the context of above conversion, x.sum() would give me
+# In the context of above conversion, x.sum() would give us
 # the total count of rows where the 'size' column is either 'm' or 'M'
 # But since we have converted it should give us 0.
 count_of_m_or_M = x.sum()
@@ -192,7 +259,7 @@ df_clean['Size']
 
 
 # %%
-# Here I am converting apps of size k(kilobytes) into 
+# Here we convert apps of size k(kilobytes) into 
 # numeric value of the given kilobytes(k) in the datframe
 def convert_k_to_numeric(x):
     try:
@@ -207,16 +274,15 @@ df_clean['Size'] = df_clean['Size'].astype(str).apply(convert_k_to_numeric)
 y = (df_clean['Size'] == 'k') | (df_clean['Size'] == 'K')
 # Once we have created the boolean mask y, we can use y.sum() 
 # to count the number of True values in the mask. 
-# In the context of above conversion, y.sum() would give me
+# In the context of above conversion, y.sum() would give us
 # the total count of rows where the 'size' column is either 'k' or 'K'
 # But since we have converted it should give us 0.
 count_of_k_or_K = y.sum()
 print(f"Count of 'k' or 'K' in the 'size' column: {count_of_k_or_K}")
 df_clean['Size']
 
-
 # %%
-# Here I am converting apps of size G(Gigabytes) 
+# Here we convert apps of size G(Gigabytes) 
 # into their corresponding values in kilobytes(k)
 def convert_g_to_numeric(x):
     if 'G' in x or 'g' in x:
@@ -228,7 +294,7 @@ df_clean['Size'] = df_clean['Size'].astype(str).apply(convert_g_to_numeric)
 z = (df_clean['Size'] == 'g') | (df_clean['Size'] == 'G')
 # Once we have created the boolean mask z, we can use z.sum() 
 # to count the number of True values in the mask. 
-# In the context of above conversion, z.sum() would give me
+# In the context of above conversion, z.sum() would give us
 # the total count of rows where the 'size' column is either 'g' or 'G'
 # But since we have converted it should give us 0.
 count_of_g_or_G = z.sum()
@@ -248,29 +314,8 @@ if count_varieswithdevice_nan == varieswithdevice_nan:
 
 #The Nan values is zero
 print(df_clean['Size'].isna().sum())
-    
 
-# %%
-df_clean['Minimum Android']
-df_clean['Minimum Android'].unique()
-df_clean['Minimum Android'].value_counts()
 
-# %%
-df_clean['Minimum Android'].isna().sum()
-# %%[markdown]
-# Since we have 6526 rows consisting of nan we can afford
-# to drop it .Considering the amount of data we have it should not possess a problem
-df_clean = df_clean.dropna(subset=['Minimum Android'])
-df_clean.isna().sum()
-
-# %%[markdown]
-# We notice that Developer website and privacy policy have too much NA values. 
-# Released column has 48371 NA values. We are not going to use these columns for model building.
-# But, we'll be using these for analysis and feature engineering going ahead.
-# So for now, we'll keep the missing values since it doesn't pose an issue.
-
-# %%[markdown]
-## Exploratory Data Analysis
 # %%
 print(df_clean['Category'].nunique())
 sns.histplot(data=df_clean, x='Category', kde=True, )
@@ -290,6 +335,100 @@ df_clean['Category'].value_counts(normalize=True)
 # %%
 df_clean['Category'] = df_clean['Category'].str.replace('Educational', 'Education')
 df_clean['Category'] = df_clean['Category'].str.replace('Music & Audio', 'Music')
+# %%[markdown]
+# We dealth with missing values for Released columns earlier. Now, let's create a feature called
+# app age from this.
+# %%
+# Calculating age of the app, by extracting the release date from the current date
+df_clean['Year Released']= df_clean['Released'].dt.year #extracting year, month and day
+df_clean['Month Released']= df_clean['Released'].dt.month
+df['Day of week Released']= df_clean['Released'].dt.dayofweek
+
+current_date=pd.to_datetime('now')
+df_clean['App Age'] = round((current_date - df_clean['Released']).dt.days / 365.25, 2) if pd.__version__ >= '1.1.0' else (current_date - df['Released']).dt.days / 365.25
+
+# %%
+# Privacy column
+# Imputing na value for easy replacement in further steps
+df_clean['Privacy Policy'].fillna('Not Available', inplace = True)
+# Creating a binary feature indicating whether the app has a privacy policy or not
+df_clean['Has_Privacy_Policy']= df_clean['Privacy Policy'].apply(lambda x: 1 if x != 'Not Available' else 0)
+df_clean['Has_Privacy_Policy']
+# %%
+# visualizing distribution of apps with and without privacy policy 
+counts = df_clean['Has_Privacy_Policy'].value_counts()
+
+plt.figure(figsize=(8, 5))
+counts.plot(kind='bar', color=['skyblue', 'orange'])
+plt.title('Distribution of Apps with and without Privacy Policies')
+plt.xlabel('Has Privacy Policy')
+plt.ylabel('Number of Apps')
+plt.xticks(rotation=0)  
+plt.show()
+# %%
+df_clean['Content Rating'].value_counts()
+# %%[markdown]
+# Upon running the value counts function on the Content Rating column, it is observed that
+# there are a total of six categories under which the apps have been sub-divided.
+# The names of the categories seem to be a bit confusing ('Everyone'/ 'Everyone 10+'), so we'll provide better distinction to each.
+# %%
+df_clean['Content Rating'] = df_clean['Content Rating'].replace('Mature 17+', '17+')
+df_clean['Content Rating'] = df_clean['Content Rating'].replace('Everyone 10+', '10+')
+df_clean['Content Rating'] = df_clean['Content Rating'].replace('Adults only 18+', '18+')
+# %%
+# We will now try to visualize the distribution of apps across different content rating categories
+df_clean['Content Rating'].value_counts(normalize=True).plot.barh()
+# The bar plot shows that most of the apps are labeled as 'Everyone', and in comparison, apps rated
+# as '18+' are almost negligible.
+# %%
+df_clean['Last Updated'].head()
+# The 'Last Updated' column is of object type.
+# %%
+# We'll now extract the year from the 'Last Updated' column using the 'splice_string' function
+# created below.
+def splice_string(original_string, start, end=None):
+    if end is None:
+        return original_string[start:]
+    else:
+        return original_string[start:end]
+# %% 
+# The extracted year is stored in a new column, 'Year Last Updated'.
+df_clean['Year Last Updated'] = df_clean['Last Updated'].apply(lambda x: splice_string(x,8, ))
+# Converting the new column to integer type
+df_clean['Year Last Updated'] = df_clean['Year Last Updated'].astype(int)
+# The range of this column is 2009 to 2021
+print(df_clean['Year Last Updated'].max(), df_clean['Year Last Updated'].min())
+
+# %%
+df_clean['Developer Website'].isna().sum()
+# There are a lot of NA values in 'Developer Website'
+# %%
+# We'll now create a separate column that will contain the presence or absence of 'Developer Website'
+# in the form of boolean (0 or 1/False or True) values.
+df_clean['has_developer_website'] = df_clean['Developer Website'].notna().astype(int)
+df_clean['has_developer_website'].head()
+# %%
+# Most apps do have a Developer Website, but the apps without a developer website are not less either
+sns.countplot(x="has_developer_website", data=df_clean, palette="ocean")
+plt.xlabel("Has Developer Website")
+plt.ylabel("Number of Apps")
+plt.title("Number of apps with or without Developer Website")
+plt.show()
+
+# %%[markdown]
+# Let's convert some of the columns to appropriate data types
+# %%
+df_clean['Size'] = pd.to_numeric(df_clean['Size'], errors='coerce')
+df_clean['Minimum Installs'] = df_clean['Minimum Installs'].astype(float)
+df_clean['Maximum Installs'] = df_clean['Maximum Installs'].astype(float)
+df_clean['Average Installs'] = df_clean[['Minimum Installs', 'Maximum Installs']].mean(axis=1)
+# %%
+df_clean['Editors Choice'] = pd.factorize(df_clean['Editors Choice'])[0]
+df_clean["Ad Supported"] = pd.factorize(df_clean["Ad Supported"])[0]
+df_clean["In App Purchases"] = pd.factorize(df_clean["In App Purchases"])[0]
+
+# %%[markdown]
+## Visualization & Analysis
 # %%
 # Now let's take a look at the top 10 categories
 top10cat = ['Education', 'Music', 'Business', 'Tools', 
@@ -382,26 +521,6 @@ df_clean['Maximum Installs'].describe()
 # %%
 # Handling : 
 # Released col, Privacy policy, ad-supported, in app purchases, editors choice and scraped time
-# %%
-# released column
-sample_values1 = df_clean['Released'].sample(n=20)
-print(sample_values1)
-# %%
-# Imputing the missing values of released column  with median date 
-df_clean['Released'] = pd.to_datetime(df_clean['Released'], errors='coerce')
-median_date = df_clean['Released'].median()  # Calculate the median date
-df_clean['Released'].fillna(median_date, inplace=True)
-df_clean['Released'].isna().sum() #rechecking for missing values
-
-# %%
-# Calculating age of the app, by extracting the release date from the current date
-
-df_clean['Year Released']= df_clean['Released'].dt.year #extracting year, month and day
-df_clean['Month Released']= df_clean['Released'].dt.month
-df['Day of week Released']= df_clean['Released'].dt.dayofweek
-
-current_date=pd.to_datetime('now')
-df_clean['App Age'] = round((current_date - df_clean['Released']).dt.days / 365.25, 2) if pd.__version__ >= '1.1.0' else (current_date - df['Released']).dt.days / 365.25
 #print(df['App Age'])
 # %%
 # visualization of released column
@@ -420,30 +539,6 @@ df_clean['Year Released'].value_counts().sort_index().plot(kind='line', marker='
 plt.title('Trend of App Releases Over the Years')
 plt.xlabel('Year Released')
 plt.ylabel('Number of Apps')
-plt.show()
-
-# %%
-# Privacy column
-# Handling missing values
-df_clean['Privacy Policy'].isnull().sum()
-# Imputing na value for easy replacement in further steps
-df_clean['Privacy Policy'].fillna('Not Available', inplace = True)
-
-# %%
-# Creating a binary feature indicating whether the app has a privacy policy or not
-df_clean['Has_PrivacyPolicy']= df_clean['Privacy Policy'].apply(lambda x: 1 if x != 'Not Available' else 0)
-df_clean['Has_PrivacyPolicy']
-# %%
-# visualizing distribution of apps with and without privacy policy 
-
-counts = df_clean['Has_PrivacyPolicy'].value_counts()
-
-plt.figure(figsize=(8, 5))
-counts.plot(kind='bar', color=['skyblue', 'orange'])
-plt.title('Distribution of Apps with and without Privacy Policies')
-plt.xlabel('Has Privacy Policy')
-plt.ylabel('Number of Apps')
-plt.xticks(rotation=0)  
 plt.show()
 
 # %%
@@ -488,45 +583,6 @@ plt.ylabel('Number of Apps')
 plt.show()
 
 # %%
-# Scraped time column just refers to the time when the data for the particular app was scraped.
-# There is no need for this column.
-df_clean = df_clean.drop('Scraped Time', axis=1)
-
-# %%
-# dev id, dev website, dev email, released, last updated, content rating
-df_clean['Content Rating'].value_counts()
-# %%[markdown]
-# Upon running the value counts function on the Content Rating column, it is observed that
-# there are a total of six categories under which the apps have been sub-divided.
-# The names of the categories seem to be a bit confusing ('Everyone'/ 'Everyone 10+'), so we'll provide better distinction to each.
-# %%
-df_clean['Content Rating'] = df_clean['Content Rating'].replace('Mature 17+', '17+')
-df_clean['Content Rating'] = df_clean['Content Rating'].replace('Everyone 10+', '10+')
-df_clean['Content Rating'] = df_clean['Content Rating'].replace('Adults only 18+', '18+')
-# %%
-# We will now try to visualize the distribution of apps across different content rating categories
-df_clean['Content Rating'].value_counts(normalize=True).plot.barh()
-# The bar plot shows that most of the apps are labeled as 'Everyone', and in comparison, apps rated
-# as '18+' are almost negligible.
-# %% # Peeking at the 'Last Updated' column...
-df_clean['Last Updated'].head()
-# The 'Last Updated' column is of object type.
-# %%
-# We'll now extract the year from the 'Last Updated' column using the 'splice_string' function
-# created below.
-def splice_string(original_string, start, end=None):
-    if end is None:
-        return original_string[start:]
-    else:
-        return original_string[start:end]
-# %% 
-# The extracted year is stored in a new column, 'Year Last Updated'.
-df_clean['Year Last Updated'] = df_clean['Last Updated'].apply(lambda x: splice_string(x,8, ))
-# Converting the new column to integer type
-df_clean['Year Last Updated'] = df_clean['Year Last Updated'].astype(int)
-# The range of this column is 2009 to 2021
-print(df_clean['Year Last Updated'].max(), df_clean['Year Last Updated'].min())
-# %%
 # We'll add a visualization of the same
 sns.boxenplot(y="Year Last Updated", data=df_clean, palette="crest")
 plt.ylabel("Year Last Updated")
@@ -549,13 +605,6 @@ plt.xlabel('Year Last Updated')
 plt.show()
 # Most recently updated apps have a higher rating count compared to apps that have been dormant for 
 # almost a decade and a half.
-# %%
-# 'Year Last Updated' as a table -
-value_counts_table = df_clean['Year Last Updated'].value_counts().reset_index()
-value_counts_table.columns = ['Year', 'Count']
-table_str = tabulate(value_counts_table, headers='keys', tablefmt='pipe', showindex=False)
-print(table_str)
-# Very few number of apps are observed been dormant since 2009
 #%%
 # Line graph of the update trend:
 df_clean['Year Last Updated'].value_counts().sort_index().plot(marker='o', color='#B28EC7')
@@ -565,151 +614,7 @@ plt.title('App Update trend over the years')
 plt.tight_layout()
 plt.show()
 # App updates peaked in 2020
-# %%
-df_clean['Developer Website'].isna().sum()
-# There are a lot of NA values in 'Developer Website'
-# %%
-# We'll now create a separate column that will contain the presence or absence of 'Developer Website'
-# in the form of boolean (0 or 1/False or True) values.
-df_clean['has_developer_website'] = df_clean['Developer Website'].notna().astype(int)
-df_clean['has_developer_website'].head()
-# %%
-# Most apps do have a Developer Website, but the apps without a developer website are not less either
-sns.countplot(x="has_developer_website", data=df_clean, palette="PiYG")
-plt.xlabel("Has Developer Website")
-plt.ylabel("Number of Apps")
-plt.title("Number of apps with or without Developer Website")
-plt.show()
-# %%
-# Visualizing the content rating based on the category of apps through a treemap
-plt.figure(figsize=(4, 8))
-fig=px.treemap(df_clean, path=["Category", "Content Rating"], 
-               title="Count of Rating by age group by category")
-fig.show()
-# %%
-fig = px.histogram(df_clean, x="Rating", color="has_developer_website", marginal="violin", 
-                   title="Number of apps by Rating, grouped by presence of developer website"
-                  )
-fig.update_layout(
-    xaxis_title="Rating",
-    yaxis_title="Count of Apps",
-    width=750,  
-    height=500
-)
-fig.show()
-# %%
-# Analysing the currency column
-currency_counts = df_clean['Currency'].value_counts()
-plt.figure(figsize=(10, 6))
-plt.pie(currency_counts, labels=currency_counts.index, autopct='%1.2f%%', startangle=90)
-plt.title('Distribution of Currencies')
-plt.legend(currency_counts.index, loc='center left', bbox_to_anchor=(1, 0.5))
-plt.show()
-# %%[markdown]
-### Conclusion:
-# The dataset is heavily dominated by transactions in U.S. Dollars,
-# as evidenced by the high probability associated with USD.
-# The low probabilities for other currencies suggest that these alternate currencies 
-# are rare or infrequently represented in the dataset. 
-# The presence of 'XXX' still indicates some instances where 
-# the currency information is unspecified or missing, albeit at 
-# a very low probability.
 
-# %%
-df_clean['Currency'].value_counts(normalize=True)
-# %%[markdown]
-# USD (U.S. Dollar): The probability of encountering the U.S. Dollar
-# in the dataset is extremely high, at approximately 99.946%. 
-# This suggests that the overwhelming majority of entries in the 
-# dataset are denominated in U.S. Dollars.
-# XXX (Unknown Currency): This has a probability of approximately
-# 0.053%, indicating that there are a small number of instances
-# where the currency information is either missing or not specified.
-# EUR (Euro), INR (Indian Rupee), GBP (British Pound Sterling), 
-# CAD (Canadian Dollar), VND (Vietnamese Dong), BRL (Brazilian Real),
-# KRW (South Korean Won), TRY (Turkish Lira), SGD (Singapore Dollar),
-# AUD (Australian Dollar), ZAR (South African Rand): These currencies 
-# have very low probabilities (in the range of 0.0000026% to 0.000000044%) 
-# relative to the U.S. Dollar, indicating their infrequent occurrence in the dataset.
-
-# %%[Processing minimum android column]
-# Function to extract the numeric part from the 'Minimum Android' column
-
-# Function to extract the numeric part, round up, and return the first three characters
-def extract_and_round_up(version_string):
-    try:
-        # Split the string, take the first part, convert to float, round up, and return the first three characters
-        # The basic reason of applying ceiling function is because
-        return str(math.ceil(float(version_string.split()[0][:3])))
-    except (ValueError, IndexError):
-        # Return the original string in case of an exception
-        return version_string
-
-df_clean['Minimum Android'] = df_clean['Minimum Android'].apply(extract_and_round_up)
-print(df_clean['Minimum Android'])
- 
-# %%
-#Visualising Minimum android Column
-plt.figure(figsize=(10, 6))
-df_clean['Minimum Android'].value_counts().plot(kind='bar', color='skyblue')
-plt.title('Distribution of Minimum Android Versions')
-plt.xlabel('Minimum Android Version')
-plt.ylabel('Count')
-plt.xticks(rotation=90, ha='right')
-plt.show()
-# %%[markdown]
-# * Android Version 5:
-# This version appears most frequently in the dataset, with a count
-# of (please enter number as data will be changed), indicating a significant presence of apps designed for
-# Android version 5.
-# * Android Version 4: The second most common version, appearing
-# 338,684 times.
-# * Android Version 6: Appears 149,101 times.
-# * Android Version 3: Appears 144,798 times.
-# * Android Version 7: Appears 34,407 times.
-# * Varies with Device: Indicates cases where the minimum Android
-# version is flexible or unspecified, occurring 24,322 times.
-# * Android Version 8: Appears 16,853 times.
-# * Android Version 2: Appears 14,025 times.
-# * Android Version 1: The least common version in the dataset,
-# appearing only 309 times.
-# 
-# These numbers provide insights into the distribution of minimum 
-# Android versions within the dataset, helping to understand the 
-# prevalence of different Android versions among the apps.
-# %%
-# We can't work with the varies with device, so we'll remove those
-df_clean = df_clean[df_clean['Minimum Android']!= 'Varies with device']
-#%%
-grouped_df1 = df_clean.groupby('Minimum Android')['Rating Count'].sum().to_frame(name='Rating Count').sort_values(by='Rating Count', ascending=False)
-grouped_df2 = df_clean.groupby('Minimum Android')['Rating'].sum().to_frame(name='Rating').sort_values(by='Rating', ascending=False)
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-
-# Plot Rating Count on the left y-axis
-color = 'tab:blue'
-ax1.bar(grouped_df1.index, grouped_df1['Rating Count'], color='skyblue')
-ax1.set_title('Rating Count by Minimum Android Version')
-ax1.set_xlabel('Minimum Android Version')
-ax1.set_ylabel('Rating Count')
-ax1.tick_params(axis='x', rotation=90)  # Rotate x-axis labels
-
-
-# Create a second y-axis for Rating on the right
-#ax2 = ax1.twinx()
-ax2.bar(grouped_df2.index, grouped_df2['Rating'], color='orange')
-ax2.set_title('Rating by Minimum Android Version')
-ax2.set_xlabel('Minimum Android Version')
-ax2.set_ylabel('Rating')
-ax2.tick_params(axis='x', rotation=90)
-
-plt.show()
-
-# %%
-df_clean.head()
-# %%[markdown]
-## SMART QUESTIONS
-
-# %%[markdown]
 # %%
 sns.barplot(x='Minimum Android', y='Rating', data=df_clean)
 plt.title("Rating vs. Minimum Android version")
@@ -721,18 +626,13 @@ sns.barplot(x='has_developer_website', y='Rating', data=df_clean)
 plt.title("Developer Website availability vs. Rating")
 plt.show()
 # It shows an app having a developer website has a higher mean rating.
+
 # %%
-df_clean['Price_Status'] = df_clean['Price'].apply(lambda x: 'Free' if x == 0 else 'Paid')
-df_clean['Price_Status'].value_counts()
-# %%
-sns.scatterplot(x='Price_Status', y='Average Installs', hue="Editors Choice", data=df_clean, s=100)
+sns.scatterplot(x='Free', y='Average Installs', hue="Editors Choice", data=df_clean, s=100)
 plt.title('Price status vs Average installs by Editors Choice')
 plt.show()
+
 # %%
-df_clean['Average Installs'] = df_clean[['Minimum Installs', 'Maximum Installs']].mean(axis=1)
-df_clean['Editors Choice'] = pd.factorize(df_clean['Editors Choice'])[0]
-df_clean['Editors Choice'].value_counts()
-#%%
 sns.barplot(x='Editors Choice', y='Rating', data=df_clean, hue='Editors Choice')
 plt.xlabel("Editor's Choice")
 plt.ylabel('Rating')
@@ -747,10 +647,7 @@ plt.show()
 # %%
 # Cleaning up the data a bit.
 df_clean['Size'].unique()
-#%%
-df_clean['Size'] = pd.to_numeric(df_clean['Size'], errors='coerce')
-df_clean['Minimum Installs'] = df_clean['Minimum Installs'].astype(float)
-df_clean['Maximum Installs'] = df_clean['Maximum Installs'].astype(float)
+
 # %%
 # Let's visualize and see 1st.
 sns.scatterplot(x= 'Size', y = 'Minimum Installs',data = df_clean, alpha=0.5)
@@ -762,9 +659,6 @@ plt.show()
 # For apps with a greater size, minimum installs in very less.
 # App size should affect the number of installs. Let see.
 
-
-df_clean = df_clean.dropna(subset=['Size', 'Minimum Installs'])
-
 # %%
 df_clean['Average Installs'].isna().sum() # check, it's 0
 # %%[markdown]
@@ -775,10 +669,12 @@ categorical_columns = df_clean.select_dtypes(include=['object']).columns
 numerical_columns = df_clean.select_dtypes(include=['number']).columns
 print("Categorical Columns:", categorical_columns)
 print("Numerical Columns:", numerical_columns)
+
 # %%
-df_clean = df_clean.drop('Free', axis=1)
-df_clean["Ad Supported"] = pd.factorize(df_clean["Ad Supported"])[0]
-df_clean["In App Purchases"] = pd.factorize(df_clean["In App Purchases"])[0]
+# Scraped time column just refers to the time when the data for the particular app was scraped.
+# There is no need for this column.
+df_clean = df_clean.drop('Scraped Time', axis=1)
+df_clean = df_clean.dropna(subset=['Size', 'Minimum Installs'])
 # %%
 df_model_data = df_clean
 #%%
@@ -799,13 +695,13 @@ lbl_category=LabelEncoder()
 df_model_data['Category']=lbl_category.fit_transform(df_model_data['Category'])
 # %%
 cc=CurrencyConverter()
-def currency_to_INR(data):
+def currency_to_USD(data):
     if data not in cc.currencies:
         data=1
     else:
-        data=cc.convert(1,data,'INR')
+        data=cc.convert(1,data,'USD')
     return data
-df_model_data['Currency']=df_model_data['Currency'].apply(currency_to_INR)
+df_model_data['Currency']=df_model_data['Currency'].apply(currency_to_USD)
 #  %%
 df_model_data.Price=df_model_data.Price*df_model_data.Currency
 df_model_data.Price.value_counts()
