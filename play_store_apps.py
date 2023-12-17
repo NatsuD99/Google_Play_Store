@@ -505,7 +505,7 @@ plt.show()
 # %%
 df_clean[df_clean['Rating Count']>1e6][df_clean['Category']=='Action'][['App Name', 'Rating', 'Rating Count']].head(10)
 # %%[markdown]
-# As we suspected, it's the most popular action games, such as Shadow Fight 2, PUBG, Among Us, etc.
+# As we suspected, it's the most popular action games, such as Shadow Fight 2, Mario Kart, Among Us, etc.
 
 # %%
 df_clean['Minimum Installs'].value_counts(normalize=True).plot.barh()
@@ -519,41 +519,22 @@ df_clean['Maximum Installs'].describe()
 # We don't really get much information from this. 
 
 # %%
-# Handling : 
-# Released col, Privacy policy, ad-supported, in app purchases, editors choice and scraped time
-#print(df['App Age'])
-# %%
 # visualization of released column
-# exploring distribution of app over the ages
-
-plt.figure(figsize=(10,6))
-sns.countplot(x= 'Year Released', data= df_clean,hue='Year Released', legend=False, palette = 'viridis')
-plt.title('Distribution of App Releases Over the Years')
-plt.xlabel('Year Released')
-plt.ylabel('Number of Apps')
-plt.show()
-
-# Line plot with aggregated counts
 plt.figure(figsize=(12, 6))
-df_clean['Year Released'].value_counts().sort_index().plot(kind='line', marker='o', color='skyblue')
+yr = df_clean['Year Released'].value_counts().sort_index()
+yr.plot(kind='line', marker='o', color='skyblue')
+for x, y in zip(yr.index, yr):
+    plt.text(x, y, str(y), ha='right', va='bottom')
 plt.title('Trend of App Releases Over the Years')
 plt.xlabel('Year Released')
 plt.ylabel('Number of Apps')
 plt.show()
-
+# %%[markdown]
+# We observe a gradual increase in the number of apps over the years and it skyrockets around 2016.
+# We see an odd sharp decrease after 2020.(Could be covid)
 # %%
 # Ad-supported Column
 df_clean['Ad Supported'].value_counts()
-
-# %%
-#Visualization of number of apps ad supported vs not supported 
-plt.figure(figsize=(8, 5))
-sns.countplot(x='Ad Supported', data=df_clean, palette='viridis',legend= False, hue= 'Ad Supported')
-plt.title('Distribution of Apps with and without Ad Support')
-plt.xlabel('Is Ad Supported')
-plt.ylabel('Number of Apps')
-plt.show()
-
 # Number of apps ad supported are almost the same as that not ad supported
 
 # %%
@@ -564,29 +545,26 @@ plt.title('Distribution of Apps with and without In-App Purchases')
 plt.xlabel('In App Purchases')
 plt.ylabel('Number of Apps')
 plt.show()
-
+# So Majority of apps do not have in-app purchases
 # %%
-# Exploring Editor's Choice App
-print(df_clean['Editors Choice'].isnull().sum())
 print('Editor_counts:\n', df_clean['Editors Choice'].value_counts())
-
 # %%
 # Visualization of the Editor's choice app
 plt.figure(figsize=(8, 5))
 sns.countplot(x='Editors Choice', data=df_clean, palette='viridis',legend= False, hue = 'Editors Choice')
-
 plt.yscale('log') # Setting y-axis to log scale for better visualization if needed
-
 plt.title("Distribution of Apps as Editor's Choice or Not")
 plt.xlabel("Is Editor's Choice")
 plt.ylabel('Number of Apps')
 plt.show()
 
 # %%
-# We'll add a visualization of the same
-sns.boxenplot(y="Year Last Updated", data=df_clean, palette="crest")
+sns.boxenplot(x="Year Last Updated", data=df_clean, palette="crest", showfliers=True)
 plt.ylabel("Year Last Updated")
 plt.show()
+# sns.boxplot(x="Year Last Updated", data=df_clean, palette="crest")
+# plt.ylabel("Year Last Updated")
+# plt.show()
 # %%
 # Visualizing the relationship between Content Rating and User Rating via a scatter plot:
 sns.stripplot(x='Content Rating', y='Rating', data=df_clean, palette="mako")
