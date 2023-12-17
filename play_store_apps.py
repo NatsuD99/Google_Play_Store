@@ -565,33 +565,44 @@ plt.show()
 # sns.boxplot(x="Year Last Updated", data=df_clean, palette="crest")
 # plt.ylabel("Year Last Updated")
 # plt.show()
+# %%[markdown]
+# We notice a heavy right skew meaning there's a concentration of updates in the latter years closer to 2020.
+# So, there has been a trend of apps being updated more frequently in recent years.
+# This could be due to a number of factors, such as the fact that newer apps are more likely to be updated than older apps, 
+# or that devs are more likely to update apps that are used frequently.
 # %%
-# Visualizing the relationship between Content Rating and User Rating via a scatter plot:
-sns.stripplot(x='Content Rating', y='Rating', data=df_clean, palette="mako")
-plt.title('Scatter Plot between Content Rating and Rating')
-plt.ylabel('Rating')
-plt.xlabel('Content Rating')
-plt.show()
-# As we deduced earlier, most apps are concentrated to the 'Everyone' category.
-# Also, people using the '18+' apps are less likely to leave a rating.
-# %%
-# Visualizing the trend between the user ratin g
-sns.stripplot(x='Year Last Updated', y='Rating', data=df_clean, palette="magma")
-plt.title('Scatter Plot between Year of Last Update and Rating')
+sns.stripplot(x='Year Last Updated', y='Rating', data=df_clean, hue='Year Last Updated', legend=False)
+plt.title('Year of Last Update vs. Rating')
 plt.ylabel('Rating')
 plt.xlabel('Year Last Updated')
 plt.show()
-# Most recently updated apps have a higher rating count compared to apps that have been dormant for 
+# Most recently updated apps have a higher rating compared to apps that have been dormant for 
 # almost a decade and a half.
+# This could be a case related to the fact that most apps were updated recently. 
+# %%
+# Visualizing the relationship between Content Rating and User Rating via a scatter plot:
+sns.stripplot(x='Content Rating', y='Rating', data=df_clean, hue='Content Rating')
+plt.title('Content Rating vs. Rating')
+plt.ylabel('Rating')
+plt.xlabel('Content Rating')
+plt.show()
+# As we deduced earlier, most apps are made with the 'Everyone' category.
+# Also, people using the '18+' and 'Unrated' apps are less likely to leave a rating.
+
 #%%
 # Line graph of the update trend:
-df_clean['Year Last Updated'].value_counts().sort_index().plot(marker='o', color='#B28EC7')
+plt.figure(figsize=(12, 6))
+yr = df_clean['Year Last Updated'].value_counts().sort_index()
+yr.plot(marker='o', color='#B28EC7')
+for x, y in zip(yr.index, yr):
+    plt.text(x, y, str(y), ha='right', va='bottom')
 plt.xlabel('Year Last Updated')
 plt.ylabel('Number of Apps')
 plt.title('App Update trend over the years')
 plt.tight_layout()
 plt.show()
-# App updates peaked in 2020
+# App updates peaked in 2020. Also this trend is similar to the one we did with Year Released.
+# There seems to be a pattern in growing apps post 2016
 
 # %%
 sns.barplot(x='Minimum Android', y='Rating', data=df_clean)
@@ -606,39 +617,36 @@ plt.show()
 # It shows an app having a developer website has a higher mean rating.
 
 # %%
-sns.scatterplot(x='Free', y='Average Installs', hue="Editors Choice", data=df_clean, s=100)
+sns.barplot(x='Free', y='Average Installs', hue="Editors Choice", data=df_clean)
 plt.title('Price status vs Average installs by Editors Choice')
 plt.show()
-
+# So it is the free apps that have editor's choice that have higher install count. 
+# Paid apps have extremely low number of installs which is expected. This indicated that users tend
+# to use free apps more.
 # %%
 sns.barplot(x='Editors Choice', y='Rating', data=df_clean, hue='Editors Choice')
 plt.xlabel("Editor's Choice")
 plt.ylabel('Rating')
 plt.title("Editor's Choice vs. Rating")
 plt.show()
+# Editor's choice apps have higher ratings as well.
 # %%
 sns.barplot(x='Editors Choice', y='Average Installs', data=df_clean)
 plt.xlabel("Editor's Choice")
 plt.ylabel('Average Installs')
-plt.title("Editor's Choice vs. Rating")
+plt.title("Editor's Choice vs. Average Installs")
 plt.show()
+# Interesting! It's like users don't even install the non editor's choice apps
 # %%
-# Cleaning up the data a bit.
-df_clean['Size'].unique()
-
-# %%
-# Let's visualize and see 1st.
 sns.scatterplot(x= 'Size', y = 'Minimum Installs',data = df_clean, alpha=0.5)
 plt.title('Scatter Plot: Size vs. Minimum Installs')
 plt.xlabel('Size')
 plt.ylabel('Minimum Installs')
 plt.show()
-# We see patterns where, the highest minimum installs are only of apps with lower size.
+# We see patterns hhere, the highest minimum installs are only of apps with lower size.
 # For apps with a greater size, minimum installs in very less.
-# App size should affect the number of installs. Let see.
+# App size does affect the number of installs.
 
-# %%
-df_clean['Average Installs'].isna().sum() # check, it's 0
 # %%[markdown]
 ## Data Preparation
 
