@@ -649,28 +649,54 @@ plt.show()
 
 # %%[markdown]
 ## Data Preparation
-
+# %%
+df_clean.isna().sum()
+# Interestingly we notice NAs in size, coul be because of 'coerce' when to converted the values to numeric.
+# Let's 1st drop those.
+# %%
+df_clean = df_clean.dropna(subset=['Size', 'Minimum Installs'])
 # %%
 categorical_columns = df_clean.select_dtypes(include=['object']).columns
 numerical_columns = df_clean.select_dtypes(include=['number']).columns
 print("Categorical Columns:", categorical_columns)
 print("Numerical Columns:", numerical_columns)
 
+# %%[markdown]
+# So, we have a bunch of categorical columns and numerical columns, many of which are not useful.
+# Let's remove the unrequired columns and have it as another dataframe. Also, we'll have 2 dataframes, 
+# one with the features required for model building and one with the app ID and name. (Will be used during further extension of this project)
 # %%
-# Scraped time column just refers to the time when the data for the particular app was scraped.
-# There is no need for this column.
-df_clean = df_clean.drop('Scraped Time', axis=1)
-df_clean = df_clean.dropna(subset=['Size', 'Minimum Installs'])
-# %%
-df_model_data = df_clean
-#%%
-df_model_data.drop(['App Id','Developer Website','Developer Email','Developer Id','Privacy Policy', 'Average Installs','Month Released', 'Year Released','Year Last Updated'],axis=1,inplace=True)
-df_model_data.head()
 
+df_final = df_clean.drop(['Developer Website','Developer Email','Developer Id',
+                          'Privacy Policy', 'Average Installs','Month Released', 'Year Released',
+                          'Year Last Updated', 'Scraped Time', 'Released', 'Last Updated'], axis=1)
+# df_clean = df_clean.dropna(subset=['Size', 'Minimum Installs'])
+# %%[markdown]
+# Now we have 19 features. The currency and price are linked. Let's convert all the currency to one unit- USD.
+# And we'll adjust the price accordingly. 
+# Once, that is done, we'll drop the currency column, because it will just have 1 value.
+# %%
+cc=CurrencyConverter()
+def currency_to_USD(data):
+    if data not in cc.currencies:
+        data=1
+    else:
+        data=cc.convert(1,data,'USD')
+    return data
+df_final['Currency']= df_final['Currency'].apply(currency_to_USD)
+#  %%
+df_final['Price']= df_final['Price']*df_final['Currency']
+df_final['Price'].value_counts()
+# %%[markdown]
+# Now let's have the model data with currency, app id and app name removed
+# %%
+df_model_data = df_final.drop(['Currency', 'App Name', 'App Id'], axis=1)
+df_model_data.head()
+# %%[markdown]
 # %%
 categorical_columns=[]
-for col in df_model_data.columns:
-    if df_model_data[col].dtype=='O':
+for col in df_final.columns:
+    if df_final[col].dtype=='O':
         categorical_columns.append(col)
 categorical_columns
 # %%
@@ -680,26 +706,10 @@ df_model_data = df_model_data[df_model_data['Minimum Android'] != 'Varies with d
 lbl_category=LabelEncoder()
 df_model_data['Category']=lbl_category.fit_transform(df_model_data['Category'])
 # %%
-cc=CurrencyConverter()
-def currency_to_USD(data):
-    if data not in cc.currencies:
-        data=1
-    else:
-        data=cc.convert(1,data,'USD')
-    return data
-df_model_data['Currency']=df_model_data['Currency'].apply(currency_to_USD)
-#  %%
-df_model_data.Price=df_model_data.Price*df_model_data.Currency
-df_model_data.Price.value_counts()
-# %%
 df_model_data['Price_Status']=lbl_category.fit_transform(df_model_data['Price_Status'])
 df_model_data['Ad Supported']=lbl_category.fit_transform(df_model_data['Ad Supported'])
 df_model_data['In App Purchases']=lbl_category.fit_transform(df_model_data['In App Purchases'])
 df_model_data['Editors Choice']=lbl_category.fit_transform(df_model_data['Editors Choice'])
-# %%
-df_model_data.drop(['Released','Last Updated','Currency'],inplace=True,axis=1)
-df_model_data.drop(['App Name'], inplace=True, axis=1)
-df_model_data.head()
 # %%
 # df_model_data.dtypes
 df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('int32')
