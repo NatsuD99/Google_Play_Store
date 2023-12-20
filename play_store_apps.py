@@ -104,7 +104,7 @@ df_clean.isna().sum()
 df_clean = df_clean.dropna(subset=['Currency'])
 df_clean.isna().sum()
 # %%[markdown]
-# Since we have 6526 rows consisting of nan we can afford
+# Since we have 6526 rows in Minimum Android consisting of nan we can afford
 # to drop it .Considering the amount of data we have it should not possess a problem
 # %%
 df_clean = df_clean.dropna(subset=['Minimum Android'])
@@ -137,7 +137,9 @@ print(df_clean['Minimum Android'].value_counts())
 # %%[markdown]
 # This has values in the form of '4.1 and up'. Let's clean it by removing the strings and rounding up 
 # to get the float minimum android version
+
 # %%
+# TODO: Have separate ideas for for 'and up' and versions b/w 2.
 # Function to extract the numeric part, round up, and return the first three characters
 def extract_and_round_up(version_string):
     try:
@@ -651,7 +653,7 @@ plt.show()
 ## Data Preparation
 # %%
 df_clean.isna().sum()
-# Interestingly we notice NAs in size, coul be because of 'coerce' when to converted the values to numeric.
+# Interestingly we notice NAs in size, could be because of 'coerce' when to converted the values to numeric.
 # Let's 1st drop those.
 # %%
 df_clean = df_clean.dropna(subset=['Size', 'Minimum Installs'])
@@ -676,6 +678,7 @@ df_final = df_clean.drop(['Developer Website','Developer Email','Developer Id',
 # And we'll adjust the price accordingly. 
 # Once, that is done, we'll drop the currency column, because it will just have 1 value.
 # %%
+# TODO: Check with Released column for the USD equivalent price at that time.
 cc=CurrencyConverter()
 def currency_to_USD(data):
     if data not in cc.currencies:
@@ -693,23 +696,25 @@ df_final['Price'].value_counts()
 df_model_data = df_final.drop(['Currency', 'App Name', 'App Id'], axis=1)
 df_model_data.head()
 # %%[markdown]
+# We have Category, Minimum Android, and content rating as categorical columns that need to be encoded.
+# Free is a bool type column, so we'll convert it into numeric.
+# We have 46 different categories, one-hot encoding it will create too much sparse data. Although it's nominal,
+# we'll label encode it first and see how the model performs.
+# Minimum Android Version we'll just convert into numerical because, it has numerical values.
+# Content Rating we'll label encode
 # %%
-categorical_columns=[]
-for col in df_final.columns:
-    if df_final[col].dtype=='O':
-        categorical_columns.append(col)
-categorical_columns
+le=LabelEncoder()
+df_model_data['Content Rating']=le.fit_transform(df_model_data['Content Rating'])
+# df_model_data = df_model_data[df_model_data['Minimum Android'] != 'Varies with device']
+df_model_data['Category']=le.fit_transform(df_model_data['Category'])
 # %%
-lbl_content_rating=LabelEncoder()
-df_model_data['Content Rating']=lbl_content_rating.fit_transform(df_model_data['Content Rating'])
-df_model_data = df_model_data[df_model_data['Minimum Android'] != 'Varies with device']
-lbl_category=LabelEncoder()
-df_model_data['Category']=lbl_category.fit_transform(df_model_data['Category'])
+# df_model_data.head()
+df_model_data['has_developer_website']
 # %%
-df_model_data['Price_Status']=lbl_category.fit_transform(df_model_data['Price_Status'])
-df_model_data['Ad Supported']=lbl_category.fit_transform(df_model_data['Ad Supported'])
-df_model_data['In App Purchases']=lbl_category.fit_transform(df_model_data['In App Purchases'])
-df_model_data['Editors Choice']=lbl_category.fit_transform(df_model_data['Editors Choice'])
+# df_model_data['Price_Status']=le.fit_transform(df_model_data['Price_Status'])
+# df_model_data['Ad Supported']=le.fit_transform(df_model_data['Ad Supported'])
+# df_model_data['In App Purchases']=le.fit_transform(df_model_data['In App Purchases'])
+# df_model_data['Editors Choice']=le.fit_transform(df_model_data['Editors Choice'])
 # %%
 # df_model_data.dtypes
 df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('int32')
