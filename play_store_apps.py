@@ -354,11 +354,11 @@ df_clean['App Age'] = round((current_date - df_clean['Released']).dt.days / 365.
 # Imputing na value for easy replacement in further steps
 df_clean['Privacy Policy'].fillna('Not Available', inplace = True)
 # Creating a binary feature indicating whether the app has a privacy policy or not
-df_clean['Has_Privacy_Policy']= df_clean['Privacy Policy'].apply(lambda x: 1 if x != 'Not Available' else 0)
-df_clean['Has_Privacy_Policy']
+df_clean['Has Privacy Policy']= df_clean['Privacy Policy'].apply(lambda x: 1 if x != 'Not Available' else 0)
+df_clean['Has Privacy Policy']
 # %%
 # visualizing distribution of apps with and without privacy policy 
-counts = df_clean['Has_Privacy_Policy'].value_counts()
+counts = df_clean['Has Privacy Policy'].value_counts()
 
 plt.figure(figsize=(8, 5))
 counts.plot(kind='bar', color=['skyblue', 'orange'])
@@ -407,11 +407,11 @@ df_clean['Developer Website'].isna().sum()
 # %%
 # We'll now create a separate column that will contain the presence or absence of 'Developer Website'
 # in the form of boolean (0 or 1/False or True) values.
-df_clean['has_developer_website'] = df_clean['Developer Website'].notna().astype(int)
-df_clean['has_developer_website'].head()
+df_clean['Has Developer Website'] = df_clean['Developer Website'].notna().astype(int)
+df_clean['Has Developer Website'].head()
 # %%
 # Most apps do have a Developer Website, but the apps without a developer website are not less either
-sns.countplot(x="has_developer_website", data=df_clean, palette="ocean")
+sns.countplot(x="Has Developer Website", data=df_clean, palette="ocean")
 plt.xlabel("Has Developer Website")
 plt.ylabel("Number of Apps")
 plt.title("Number of apps with or without Developer Website")
@@ -613,7 +613,7 @@ plt.show()
 # It's difficult to notice anything peculiar other than android versions 2 and 3 have higher average ratings
 # and higher android versions have relatively lower avg ratings.
 # %%
-sns.barplot(x='has_developer_website', y='Rating', data=df_clean)
+sns.barplot(x='Has Developer Website', y='Rating', data=df_clean)
 plt.title("Developer Website availability vs. Rating")
 plt.show()
 # It shows an app having a developer website has a higher mean rating.
@@ -703,21 +703,14 @@ df_model_data.head()
 # Minimum Android Version we'll just convert into numerical because, it has numerical values.
 # Content Rating we'll label encode
 # %%
+df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('int32')
+# %%
 le=LabelEncoder()
 df_model_data['Content Rating']=le.fit_transform(df_model_data['Content Rating'])
-# df_model_data = df_model_data[df_model_data['Minimum Android'] != 'Varies with device']
 df_model_data['Category']=le.fit_transform(df_model_data['Category'])
 # %%
-# df_model_data.head()
-df_model_data['has_developer_website']
-# %%
-# df_model_data['Price_Status']=le.fit_transform(df_model_data['Price_Status'])
-# df_model_data['Ad Supported']=le.fit_transform(df_model_data['Ad Supported'])
-# df_model_data['In App Purchases']=le.fit_transform(df_model_data['In App Purchases'])
-# df_model_data['Editors Choice']=le.fit_transform(df_model_data['Editors Choice'])
-# %%
-# df_model_data.dtypes
-df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('int32')
+# Let's take a glimpse of the final data
+df_model_data.head()
 # %%
 plt.figure(figsize=(20,15))
 sns.heatmap(df_model_data.corr(),annot=True)
@@ -780,7 +773,6 @@ print('Test RMSE Decision Tree Regression: ',mean_squared_error(test_Y, model_dt
 # 
 # We'll use bayesian search instead of the regular grid search because our dataset (search space) is huge and
 # we want a computationally efficient tuning algorithm
-# %%
 # %%
 np.random.seed(7)
 param_grid = {
