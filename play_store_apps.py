@@ -15,11 +15,12 @@ from scipy.stats import kruskal, pearsonr, f_oneway
 from sklearn.model_selection import train_test_split
 from currency_converter import CurrencyConverter
 from sklearn.linear_model import LinearRegression, SGDRegressor
-from lightgbm import LGBMRegressor
+from lightgbm import LGBMRegressor, plot_importance
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.tree import DecisionTreeRegressor
 import statsmodels.api as sm
 from skopt  import BayesSearchCV # pip install scikit-optimize
+import pickle
  # %% [markdown]
 ## Import Data
 # %%
@@ -804,3 +805,47 @@ print('Test RMSE LGBM Regression(Optimized): ',mean_squared_error(test_Y, bayesi
 # * Train RMSE: 0.1919
 # * Test RMSE : 0.1924
 # %%
+from sklearn.ensemble import RandomForestRegressor
+model_rf = RandomForestRegressor()
+model_rf.fit(train_X,train_Y)
+# %%
+print('Train RMSE Random Forest Regression: ',mean_squared_error(train_Y, model_rf.predict(train_X)))
+print('Test RMSE Random Forest Regression: ',mean_squared_error(test_Y, model_rf.predict(test_X)))
+# %%[markdown]
+# We get an overfit model. This isn't worth the time and resources.
+# %%
+from sklearn.ensemble import GradientBoostingRegressor
+model_gbr = GradientBoostingRegressor()
+model_gbr.fit(train_X,train_Y)
+# %%
+print('Train RMSE Gradient Boosting Regression: ',mean_squared_error(train_Y, model_gbr.predict(train_X)))
+print('Test RMSE Gradient Boosting Regression: ',mean_squared_error(test_Y, model_gbr.predict(test_X)))
+# %%[markdown]
+# Basically the same result as decision tree but this consumes more time. So we'll exclude this.
+# 
+# From the bayesian search above, we have our best Parameters, let's build the LGBM Models with those params.
+# %%
+np.random.seed(7)
+model_best_lgbm = LGBMRegressor(learning_rate=0.1, max_depth=16, n_estimators=153, 
+                                num_leaves=31, reg_alpha=0.06383671801269114)
+model_best_lgbm.fit(train_X, train_Y)
+# %%
+print('Train RMSE LGBM Regression: ',mean_squared_error(train_Y, model_best_lgbm.predict(train_X))) # 0.1918
+print('Test RMSE LGBM Regression: ',mean_squared_error(test_Y, model_best_lgbm.predict(test_X))) # 0.1938
+# %%
+# Plot feature importance using Gain
+plot_importance(model_lgbm, importance_type="gain", figsize=(7,6), title="LightGBM Feature Importance (Gain)")
+plt.show()
+# %%
+plot_importance(model_lgbm, importance_type="split", figsize=(7,6), title="LightGBM Feature Importance (Split)")
+plt.show()
+# %%[markdown]
+
+# %%
+# Good, Now let's build the final model with the entire data and save it for production.
+np.random.seed(7)
+final_model = LGBMRegressor(learning_rate=0.1, max_depth=16, n_estimators=153, 
+                                num_leaves=31, reg_alpha=0.06383671801269114)
+final_model.fit(x, y)
+# %%
+# pickle.dump(final_model, open('rating_model', 'wb'))
