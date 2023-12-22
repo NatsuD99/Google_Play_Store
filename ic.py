@@ -1,10 +1,12 @@
+%%
+
+
 #%%
 import pandas as pd
 import joblib
 import numpy as np
 from sklearn.metrics import mean_squared_error
 
-# Load the trained model
 model = joblib.load('model.pkl')
 
 def gif(model, input_data):
@@ -35,3 +37,4 @@ print("Predicted Values:", prediction)
 print("Important Features:", important_features)
 print("RMSE:", rmse)
 # %%
+
