@@ -36,7 +36,7 @@ class InferenceEngine:
         return self.predict_for_single_data_point(features)
 
 if __name__ == "__main__":
-    #TODO: Can make diffent engines for diffent model and can gove output with best RMSE. 
+    #TODO: Can make diffent engines for diffent model and can gove output with best RMSE.  
     engine = InferenceEngine('model.pkl') # Path to the model file
     # #TODO: fetch the features as JSON and pass it directly to engine 
     json_input = '''

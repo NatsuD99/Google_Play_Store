@@ -20,11 +20,12 @@ from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.tree import DecisionTreeRegressor
 import statsmodels.api as sm
 from skopt  import BayesSearchCV # pip install scikit-optimize
+import joblib
  # %% [markdown]
 ## Import Data
 # %%
 # Uncomment, run this just once, and then, comment out the code in this cell.
-# od.download("https://www.kaggle.com/datasets/gauthamp10/google-playstore-apps")
+#od.download("https://www.kaggle.com/datasets/gauthamp10/google-playstore-apps")
 
 
 # %%
@@ -542,7 +543,7 @@ df_clean['Ad Supported'].value_counts()
 # %%
 df_clean['In App Purchases'].isnull().sum()
 plt.figure(figsize=(8, 5))
-sns.countplot(x='In App Purchases', data=df_clean, palette='viridis',hue= 'In App Purchases',legend= False)
+sns.countplot(x='In App Purchases', data=df_clean, palette='viridis',hue= 'In App Purchases')
 plt.title('Distribution of Apps with and without In-App Purchases')
 plt.xlabel('In App Purchases')
 plt.ylabel('Number of Apps')
@@ -553,7 +554,7 @@ print('Editor_counts:\n', df_clean['Editors Choice'].value_counts())
 # %%
 # Visualization of the Editor's choice app
 plt.figure(figsize=(8, 5))
-sns.countplot(x='Editors Choice', data=df_clean, palette='viridis',legend= False, hue = 'Editors Choice')
+sns.countplot(x='Editors Choice', data=df_clean, palette='viridis', hue = 'Editors Choice')
 plt.yscale('log') # Setting y-axis to log scale for better visualization if needed
 plt.title("Distribution of Apps as Editor's Choice or Not")
 plt.xlabel("Is Editor's Choice")
@@ -757,6 +758,10 @@ model_lgbm.fit(train_X, train_Y)
 # %%
 print('Train RMSE LGBM Regression: ',mean_squared_error(train_Y, model_lgbm.predict(train_X)))
 print('Test RMSE LGBM Regression: ',mean_squared_error(test_Y, model_lgbm.predict(test_X)))
+
+# #%%
+# test_Y.to_csv('test_Y.csv', index=False)
+# #%%
 # %%[markdown]
 # That was amazing, so gradient boosting algorithm works amazing in this and gives an RMSE of 0.19
 # This is extremely good, let's try a decision tree to see how that performs
@@ -803,4 +808,6 @@ print('Test RMSE LGBM Regression(Optimized): ',mean_squared_error(test_Y, bayesi
 # The finale RMSE Value achieved:
 # * Train RMSE: 0.1919
 # * Test RMSE : 0.1924
-# %%
+# # %%
+# joblib.dump(model_lgbm, 'model.pkl')
+#%%

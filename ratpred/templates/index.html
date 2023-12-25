@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>App Score Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            {#height: 100vh;#}
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input, button {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        h3 {
+            color: green;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>App Score Prediction</h2>
+        <form action="{{ url_for('predict')}}" method="post">
+        <input type="number" name="Category" placeholder="Category" required="required" />
+        <input type="number" name="Rating Count" placeholder="Rating Count" required="required" />
+        <input type="number" name="Maximum Installs" placeholder="Maximum Installs" required="required" />
+        <input type="number" name="App Age" placeholder="App Age" required="required" />
+        <input type="number" name="Size" placeholder="Size" required="required" />
+        <input type="number" name="Ad Supported" placeholder="Ad Supported" required="required" />
+        <input type="number" name="Minimum Android" placeholder="Minimum Android" required="required" />
+        <input type="number" name="In App Purchases" placeholder="In App Purchases" required="required" />
+        <input type="number" name="Content Rating" placeholder="Content Rating" required="required" />
+        <input type="number" name="Has Developer Website" placeholder="Has Developer Website" required="required" />
+        <input type="number" name="Price" placeholder="Price" required="required" />
+        <input type="number" name="Free" placeholder="Free" required="required" />
+        <input type="number" name="Has Privacy Policy" placeholder="Has Privacy Policy" required="required" />
+        <input type="number" name="Minimum Installs" placeholder="Minimum Installs" required="required" />
+            <button type="submit">Predict</button>
+        </form>
+        {% if prediction_text %}
+            <h3>{{ prediction_text }}</h3>
+        {% endif %}
+    </div>
+</body>
+</html>
