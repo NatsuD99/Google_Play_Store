@@ -59,9 +59,10 @@
         <h2>App Score Prediction</h2>
         <form action="/predict" method="post">
             <input type="text" name="Category" placeholder="Category" required />
+
             <input type="number" name="Rating Count" placeholder="Rating Count" required />
-            <input type="number" name="Maximum Installs" placeholder="Maximum Installs" required />
-            <input type="number" name="App Age" placeholder="App Age" required />
+            <input type="number" name="Maximum Installs" placeholder="Maximum Installs" step="10" required />
+            <input type="number" name="App Age" placeholder="App Age" step="0.01" required />
             <input type="number" name="Size" placeholder="Size" required />
 
             <select name="Ad Supported" required>
@@ -78,7 +79,15 @@
                 <option value="0">No</option>
             </select>
 
-            <input type="number" name="Content Rating" placeholder="Content Rating" required />
+            <select name = "Content Rating" required>
+                <option value="">Content Rating</option>
+                <option value="Everyone">Everyone</option>
+                <option value="Teen">Teen</option>
+                <option value="10+">Everyone 10+</option>
+                <option value="17+">Mature 17+</option>
+                <option value="18+">Adults only 18+</option>
+                <option value="Unrated">Unrated</option>
+            </select>
 
             <select name="Has Developer Website" required>
                 <option value="">Has Developer Website</option>
@@ -100,7 +109,7 @@
                 <option value="0">No</option>
             </select>
 
-            <input type="number" name="Minimum Installs" placeholder="Minimum Installs" required />
+            <input type="number" name="Minimum Installs" placeholder="Minimum Installs" step="10" required />
 
             <button type="submit">Predict</button>
         </form>
