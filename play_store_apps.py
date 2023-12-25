@@ -704,6 +704,15 @@ df_model_data.head()
 # Minimum Android Version we'll just convert into numerical because, it has numerical values.
 # Content Rating we'll label encode
 # %%
+# Changing data types for input comprehensibility while deployment. Will have to encode these back for model training
+df_model_data['Ad Supported'] = df_model_data['Ad Supported'].replace({0: 'No', 1: 'Yes'})
+df_model_data['In App Purchases'] = df_model_data['In App Purchases'].replace({0: 'No', 1: 'Yes'})
+df_model_data['Editors Choice'] = df_model_data['Editors Choice'].replace({0: 'No', 1: 'Yes'})
+df_model_data['Has Privacy Policy'] = df_model_data['Has Privacy Policy'].replace({0: 'No', 1: 'Yes'})
+df_model_data['Has Developer Website'] = df_model_data['Has Developer Website'].replace({0: 'No', 1: 'Yes'})
+# %%
+df_model_data.to_csv('google-playstore-apps/df_model_data.csv', index=False)
+# %%
 df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('int32')
 # %%
 le=LabelEncoder()
@@ -834,13 +843,17 @@ print('Train RMSE LGBM Regression: ',mean_squared_error(train_Y, model_best_lgbm
 print('Test RMSE LGBM Regression: ',mean_squared_error(test_Y, model_best_lgbm.predict(test_X))) # 0.1938
 # %%
 # Plot feature importance using Gain
-plot_importance(model_lgbm, importance_type="gain", figsize=(7,6), title="LightGBM Feature Importance (Gain)")
+plot_importance(model_best_lgbm, importance_type="gain", figsize=(7,6), title="LightGBM Feature Importance (Gain)")
 plt.show()
 # %%
-plot_importance(model_lgbm, importance_type="split", figsize=(7,6), title="LightGBM Feature Importance (Split)")
+plot_importance(model_best_lgbm, importance_type="split", figsize=(7,6), title="LightGBM Feature Importance (Split)")
 plt.show()
 # %%[markdown]
-
+# OK, So we have a general idea on which features seem to be imoprtant. 
+# We need to remove the features which one can't provide input, luckily editor's choice is with the least importance,
+# so we can easily remove it.
+# %%
+x = x.drop('Editors Choice', axis=1)
 # %%
 # Good, Now let's build the final model with the entire data and save it for production.
 np.random.seed(7)
@@ -848,4 +861,12 @@ final_model = LGBMRegressor(learning_rate=0.1, max_depth=16, n_estimators=153,
                                 num_leaves=31, reg_alpha=0.06383671801269114)
 final_model.fit(x, y)
 # %%
-# pickle.dump(final_model, open('rating_model', 'wb'))
+mean_squared_error(y, final_model.predict(x))
+# Not much of a drop, so we're good to go
+# %%
+pickle.dump(final_model, open('rating_model.pkl', 'wb'))
+# %%
+# model = pickle.load(open("rating_model.pkl", "rb"))
+# # %%
+# test1 = model.predict(x)
+# %%
