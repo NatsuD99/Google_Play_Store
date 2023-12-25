@@ -27,6 +27,10 @@ def predict():
             "Has Privacy Policy": request.form['Has Privacy Policy'],
             "Minimum Installs": request.form['Minimum Installs']
         }
+        # for key in features:
+        #     features[key] = int(features[key])
+        for key, value in features.items():
+            print(f"{key}: {value} (Type: {type(value)})")
         json_input = json.dumps(features)
         model_path = 'rating_model.pkl'
         prediction = predict_ratings(model_path, json_input)
