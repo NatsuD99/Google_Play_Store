@@ -69,20 +69,20 @@ def home():
 def predict():
     if request.method=='POST':
         features = {
-                    "Category": request.form['Category'],
-                    "Rating Count": request.form['Rating Count'],
-                    "Maximum Installs": request.form['Maximum Installs'],
-                    "App Age": request.form['App Age'],
-                    "Size": request.form['Size'],
-                    "Ad Supported": request.form['Ad Supported'],
-                    "Minimum Android": request.form['Minimum Android'],
-                    "In App Purchases": request.form['In App Purchases'],
-                    "Content Rating": request.form['Content Rating'],
-                    "Has Developer Website": request.form['Has Developer Website'],
-                    "Price": request.form['Price'],
-                    "Free": request.form['Free'],
-                    "Has Privacy Policy": request.form['Has Privacy Policy'],
-                    "Minimum Installs": request.form['Minimum Installs']
+                    "Category": [request.form['Category']],  # text
+                    "Rating Count": [request.form['Rating Count']],  # number
+                    "Maximum Installs": [request.form['Maximum Installs']],  # number
+                    "App Age": [request.form['App Age']],  # number
+                    "Size": [request.form['Size']],  # number
+                    "Ad Supported": [request.form['Ad Supported']],  # select
+                    "Minimum Android": [request.form['Minimum Android']],  # number
+                    "In App Purchases": [request.form['In App Purchases']],  # select
+                    "Content Rating": [request.form['Content Rating']],  # number
+                    "Has Developer Website": [request.form['Has Developer Website']],  # select
+                    "Price": [request.form['Price']],  # number
+                    "Free": [request.form['Free']],  # select
+                    "Has Privacy Policy": [request.form['Has Privacy Policy']],  # select
+                    "Minimum Installs": [request.form['Minimum Installs']]  # number
                     }
 
         features = pd.DataFrame(features)
