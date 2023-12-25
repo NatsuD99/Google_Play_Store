@@ -713,6 +713,13 @@ df_model_data['Has Developer Website'] = df_model_data['Has Developer Website'].
 # %%
 df_model_data.to_csv('google-playstore-apps/df_model_data.csv', index=False)
 # %%
+df_model_data['Ad Supported'], _ = pd.factorize(df_model_data['Ad Supported'])
+df_model_data['In App Purchases'], _ = pd.factorize(df_model_data['In App Purchases'])
+df_model_data['Editors Choice'], _ = pd.factorize(df_model_data['Editors Choice'])
+df_model_data['Has Privacy Policy'] = df_model_data['Has Privacy Policy'].replace({'No': 0, 'Yes': 1})
+df_model_data['Has Developer Website'] = df_model_data['Has Developer Website'].replace({'No': 0, 'Yes': 1})
+# %%
+df_model_data['Has Developer Website'] = df_model_data['Has Developer Website'].astype('int32')
 df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('int32')
 # %%
 le=LabelEncoder()
