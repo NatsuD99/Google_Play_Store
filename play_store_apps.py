@@ -1,7 +1,6 @@
 # %% [markdown]
 ## Import Libraries
 # %%
-import smtpd
 import opendatasets as od
 import numpy as np
 import pandas as pd
@@ -711,7 +710,9 @@ df_model_data['Editors Choice'] = df_model_data['Editors Choice'].replace({0: 'N
 df_model_data['Has Privacy Policy'] = df_model_data['Has Privacy Policy'].replace({0: 'No', 1: 'Yes'})
 df_model_data['Has Developer Website'] = df_model_data['Has Developer Website'].replace({0: 'No', 1: 'Yes'})
 # %%
-df_model_data.to_csv('google-playstore-apps/df_model_data.csv', index=False)
+# df_model_data.to_csv('google-playstore-apps/df_model_data.csv', index=False)
+# %%
+# df_model_data = pd.read_csv('google-playstore-apps/df_model_data.csv')
 # %%
 df_model_data['Ad Supported'], _ = pd.factorize(df_model_data['Ad Supported'])
 df_model_data['In App Purchases'], _ = pd.factorize(df_model_data['In App Purchases'])
@@ -720,7 +721,7 @@ df_model_data['Has Privacy Policy'] = df_model_data['Has Privacy Policy'].replac
 df_model_data['Has Developer Website'] = df_model_data['Has Developer Website'].replace({'No': 0, 'Yes': 1})
 # %%
 df_model_data['Has Developer Website'] = df_model_data['Has Developer Website'].astype('int32')
-df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('int32')
+df_model_data['Minimum Android'] = df_model_data['Minimum Android'].astype('float64')
 # %%
 le=LabelEncoder()
 df_model_data['Content Rating']=le.fit_transform(df_model_data['Content Rating'])
