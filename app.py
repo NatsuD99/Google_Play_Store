@@ -107,7 +107,7 @@ def predict():
         features['Free'] = features['Free'].astype('bool')
         features['Price'] = features['Price'].astype('float64')
         features['Size'] = features['Size'].astype('float64')
-        features['Minimum Android'] = features['Minimum Android'].astype('int32')
+        features['Minimum Android'] = features['Minimum Android'].astype('float64')
 
         content_rating_mapping = {'10+': 0, '17+': 1, '18+': 2, 'Everyone': 3, 'Teen': 4, 'Unrated': 5}
         features['Content Rating'] = features['Content Rating'].map(content_rating_mapping).astype('int32')
