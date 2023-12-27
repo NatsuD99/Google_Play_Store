@@ -60,7 +60,7 @@ def predict():
             'Social': 37, 'Sports': 38, 'Strategy': 39, 'Tools': 40, 'Travel & Local': 41,
             'Trivia': 42, 'Video Players & Editors': 43, 'Weather': 44, 'Word': 45
         }
-        print(features['Category'].map(label_mapping).astype('int32'))
+
         features['Category'] = features['Category'].map(label_mapping).astype('int32')
         features['Rating Count'] = features['Rating Count'].astype('float64')
         features['Minimum Installs'] = features['Minimum Installs'].astype('float64')
