@@ -2,78 +2,113 @@
 <html>
 <head>
     <title>App Score Prediction</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /*{height: 100vh;}*/
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        input, button {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        h2 {
-            color: #333;
-            text-align: center;
-        }
-        h3 {
-            color: green;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
     <div class="container">
-        <h2>App Score Prediction</h2>
-        <form action="\predict" method="post">
-        <input type="number" name="Category" placeholder="Category" required="required" />
-        <input type="number" name="Rating Count" placeholder="Rating Count" required="required" />
-        <input type="number" name="Maximum Installs" placeholder="Maximum Installs" required="required" />
-        <input type="number" name="App Age" placeholder="App Age" required="required" />
-        <input type="number" name="Size" placeholder="Size" required="required" />
-        <input type="number" name="Ad Supported" placeholder="Ad Supported" required="required" />
-        <input type="number" name="Minimum Android" placeholder="Minimum Android" required="required" />
-        <input type="number" name="In App Purchases" placeholder="In App Purchases" required="required" />
-        <input type="number" name="Content Rating" placeholder="Content Rating" required="required" />
-        <input type="number" name="Has Developer Website" placeholder="Has Developer Website" required="required" />
-        <input type="number" name="Price" placeholder="Price" required="required" />
-        <input type="number" name="Free" placeholder="Free" required="required" />
-        <input type="number" name="Has Privacy Policy" placeholder="Has Privacy Policy" required="required" />
-        <input type="number" name="Minimum Installs" placeholder="Minimum Installs" required="required" />
-            <button type="submit">Predict</button>
-        </form>
-        {% if prediction_text %}
-            <h3>{{ prediction_text }}</h3>
-        {% endif %}
+        <header class="app-header">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="RateMe Logo" class="logo">
+        </header>
+        <main class="main-content">
+            <h1 class="title">App Score Prediction</h1>
+            <form action="/predict" method="post" class="prediction-form">
+                <div class="form-row">
+                    <section class="attributes core-attributes">
+                        <h2>Core Attributes</h2>
+                        <label>
+                            <select name="Category" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label>
+                            <select name="Ad Supported" required>
+                                <option value="">Ad Supported</option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </label>
+                        <label>
+                            <input type="number" name="Minimum Android" placeholder="Minimum Android" required />
+                        </label>
+                        <label>
+                            <select name="In App Purchases" required>
+                                <option value="">In App Purchases</option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </label>
+                        <label>
+                            <select name = "Content Rating" required>
+                                <option value="">Content Rating</option>
+                                <option value="Everyone">Everyone</option>
+                                <option value="Teen">Teen</option>
+                                <option value="10+">Everyone 10+</option>
+                                <option value="17+">Mature 17+</option>
+                                <option value="18+">Adults only 18+</option>
+                                <option value="Unrated">Unrated</option>
+                            </select>
+                        </label>
+                        <label>
+                            <select name="Has Developer Website" required>
+                                <option value="">Has Developer Website</option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </label>
+                        <label>
+                            <select name="Free" required>
+                                <option value="">Free</option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </label>
+                        <label>
+                            <select name="Has Privacy Policy" required>
+                                <option value="">Has Privacy Policy</option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </label>
+                    </section>
+                    <section class="attributes dynamic-modifiers">
+                        <h2>Dynamic Modifiers</h2>
+                        <label>
+                            <input type="number" name="Rating Count" placeholder="Rating Count" required />
+                        </label>
+                        <label>
+                            <input type="number" name="Maximum Installs" placeholder="Maximum Installs" required />
+                        </label>
+                        <label>
+                            <input type="number" name="Minimum Installs" placeholder="Minimum Installs" required />
+                        </label>
+                        <label>
+                            <input type="number" name="App Age" placeholder="App Age" step="0.01" required />
+                        </label>
+                        <label>
+                            <input type="number" name="Size" placeholder="Size" required />
+                        </label>
+                        <label>
+                            <input type="number" name="Price" placeholder="Price" step="0.01" required />
+                        </label>
+                    </section>
+                </div>
+                <div class="form-row">
+                    <button type="submit" class="predict-button">Predict</button>
+                </div>
+            </form>
+            {% if prediction_text %}
+                <div class="prediction-result">
+                    <h3>{{ prediction_text }}</h3>
+                </div>
+            {% endif %}
+        </main>
+        <footer class="app-footer">
+            <p>© 2023 RateMe Platform</p>
+        </footer>
     </div>
 </body>
 </html>
