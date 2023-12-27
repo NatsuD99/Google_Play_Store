@@ -6,18 +6,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 import math
 sns.set_palette('ocean_r')
-import scipy.stats as stats
-from scipy.stats import kruskal, pearsonr, f_oneway
 from sklearn.model_selection import train_test_split
 from currency_converter import CurrencyConverter
 from sklearn.linear_model import LinearRegression, SGDRegressor
 from lightgbm import LGBMRegressor, plot_importance
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.tree import DecisionTreeRegressor
-import statsmodels.api as sm
 from skopt  import BayesSearchCV # pip install scikit-optimize
 import pickle
  # %% [markdown]
@@ -746,24 +743,24 @@ train_X,test_X,train_Y,test_Y=train_test_split(x,y,test_size=0.15,random_state=4
 # We will use RMSE to evaluate our regression model. We will use the basic Linear Regression model as
 # the baseline. Before this, let's set a seed to get avoid variable results.
 # %%
-np.random.seed(7)
-model_lr=LinearRegression()
-model_lr.fit(train_X,train_Y)
+# np.random.seed(7)
+# model_lr=LinearRegression()
+# model_lr.fit(train_X,train_Y)
 # %%
-print('Train RMSE Linear Regression: ', mean_squared_error(train_Y, model_lr.predict(train_X)))
-print('Test RMSE Linear Regression: ',mean_squared_error(test_Y, model_lr.predict(test_X)))
+# print('Train RMSE Linear Regression: ', mean_squared_error(train_Y, model_lr.predict(train_X)))
+# print('Test RMSE Linear Regression: ',mean_squared_error(test_Y, model_lr.predict(test_X)))
 # %%[markdown]
 # We get an ~ 3.96 RMSE value in train set and just a bit more, 3.98, on test set.
 # Well, good thing that our model isn't overfitting much.
 # 
 # Now let's try some other models and see their performance
 # %%
-np.random.seed(7)
-model_sgd = SGDRegressor()
-model_sgd.fit(train_X, train_Y)
+# np.random.seed(7)
+# model_sgd = SGDRegressor()
+# model_sgd.fit(train_X, train_Y)
 # %%
-print('Train RMSE SGD Regression: ',mean_squared_error(train_Y, model_sgd.predict(train_X)))
-print('Test RMSE SGD Regression: ',mean_squared_error(test_Y, model_sgd.predict(test_X)))
+# print('Train RMSE SGD Regression: ',mean_squared_error(train_Y, model_sgd.predict(train_X)))
+# print('Test RMSE SGD Regression: ',mean_squared_error(test_Y, model_sgd.predict(test_X)))
 # %%[markdown]
 # We get a worse RMSE than the Linear model, it has now increased to 5.41e+45 in train and 5.21e+45 in test.
 # Let's try using better models to bring it under 1. 
@@ -779,12 +776,12 @@ print('Test RMSE LGBM Regression: ',mean_squared_error(test_Y, model_lgbm.predic
 # That was amazing, so gradient boosting algorithm works amazing in this and gives an RMSE of 0.19
 # This is extremely good, let's try a decision tree to see how that performs
 # %%
-np.random.seed(7)
-model_dt=DecisionTreeRegressor(max_depth=9)
-model_dt.fit(train_X,train_Y)
+# np.random.seed(7)
+# model_dt=DecisionTreeRegressor(max_depth=9)
+# model_dt.fit(train_X,train_Y)
 # %%
-print('Train RMSE Decision Tree Regression: ',mean_squared_error(train_Y, model_dt.predict(train_X)))
-print('Test RMSE Decision Tree Regression: ',mean_squared_error(test_Y, model_dt.predict(test_X)))
+# print('Train RMSE Decision Tree Regression: ',mean_squared_error(train_Y, model_dt.predict(train_X)))
+# print('Test RMSE Decision Tree Regression: ',mean_squared_error(test_Y, model_dt.predict(test_X)))
 # %%[markdown]
 # We get a great model here as well, with an RMSE of 0.2. But the LGBM is still the better one.
 # We'll consider LGBM as our best model. Now let's try to tune that for our final model
@@ -822,21 +819,21 @@ print('Test RMSE LGBM Regression(Optimized): ',mean_squared_error(test_Y, bayesi
 # * Train RMSE: 0.1919
 # * Test RMSE : 0.1924
 # %%
-from sklearn.ensemble import RandomForestRegressor
-model_rf = RandomForestRegressor()
-model_rf.fit(train_X,train_Y)
+# from sklearn.ensemble import RandomForestRegressor
+# model_rf = RandomForestRegressor()
+# model_rf.fit(train_X,train_Y)
 # %%
-print('Train RMSE Random Forest Regression: ',mean_squared_error(train_Y, model_rf.predict(train_X)))
-print('Test RMSE Random Forest Regression: ',mean_squared_error(test_Y, model_rf.predict(test_X)))
+# print('Train RMSE Random Forest Regression: ',mean_squared_error(train_Y, model_rf.predict(train_X)))
+# print('Test RMSE Random Forest Regression: ',mean_squared_error(test_Y, model_rf.predict(test_X)))
 # %%[markdown]
 # We get an overfit model. This isn't worth the time and resources.
 # %%
-from sklearn.ensemble import GradientBoostingRegressor
-model_gbr = GradientBoostingRegressor()
-model_gbr.fit(train_X,train_Y)
+# from sklearn.ensemble import GradientBoostingRegressor
+# model_gbr = GradientBoostingRegressor()
+# model_gbr.fit(train_X,train_Y)
 # %%
-print('Train RMSE Gradient Boosting Regression: ',mean_squared_error(train_Y, model_gbr.predict(train_X)))
-print('Test RMSE Gradient Boosting Regression: ',mean_squared_error(test_Y, model_gbr.predict(test_X)))
+# print('Train RMSE Gradient Boosting Regression: ',mean_squared_error(train_Y, model_gbr.predict(train_X)))
+# print('Test RMSE Gradient Boosting Regression: ',mean_squared_error(test_Y, model_gbr.predict(test_X)))
 # %%[markdown]
 # Basically the same result as decision tree but this consumes more time. So we'll exclude this.
 # 
