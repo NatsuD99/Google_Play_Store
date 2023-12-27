@@ -47,7 +47,7 @@ The RateMe platform is deployed as a user-friendly website. Leveraging the power
 If you want to run this project and make changes on your own, keep the following in mind.
 1. Download your kaggle credentials and put it in the folder you are working on, in order to fetch the data in the code.
 2. Run model.py to generate the pickled model.
-3. run app.py to run the flask model lcoally.
+3. run app.py to run the flask model locally.
 
 We welcome contributions from the community to enhance and improve the RateMe platform. Whether you're a developer, data scientist, or enthusiast, your input is valuable.
 
