@@ -38,7 +38,7 @@ nest-asyncio==1.5.8
 numpy==1.24.4
 opendatasets==0.1.22
 packaging==23.2
-pandas==2.1.4
+pandas==2.0.3
 parso==0.8.3
 pickleshare==0.7.5
 Pillow==10.1.0
