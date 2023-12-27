@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>App Score Prediction</title>
+    <title>RateMe</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
@@ -9,6 +9,10 @@
     <div class="container">
         <header class="app-header">
             <img src="{{ url_for('static', filename='logo.jpg') }}" alt="RateMe Logo" class="logo">
+            <!-- Description next to the logo -->
+            <div class="app-description">
+                <span class="typewriter-text">Your ultimate app rating platform. Analyze and predict app success with our AI-powered insights.</span>
+            </div>
         </header>
         <main class="main-content">
             <h1 class="title">App Score Prediction</h1>
